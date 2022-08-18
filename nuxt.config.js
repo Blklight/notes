@@ -124,6 +124,7 @@ export default {
         "faHome",
         "faFilePen",
         "faTrashCan",
+        "faXmark",
       ],
       regular: ["faSun", "faMoon", "faWindowClose"],
       brands: [

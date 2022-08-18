@@ -9,22 +9,25 @@
         <font-awesome-icon :icon="['fa', 'adjust']" />
       </button>
     </div>
-    <h1
-      class="text-center py-4 d-flex align-items-center justify-content-center"
-    >
-      Click on
-      <button class="btn btn-raised btn-uv mx-2" @click.prevent="formSwitch">
-        <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
-      </button>
-      to write your first note
-    </h1>
-    <section v-if="notes.lenght > 0" class="note-grid">
+    <section v-if="notes.length === 0" class="py-5">
+      <h1
+        class="text-center py-4 d-flex align-items-center justify-content-center"
+      >
+        Click on
+        <button class="btn btn-raised btn-uv mx-2" @click.prevent="formSwitch">
+          <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
+        </button>
+        to write your first note
+      </h1>
+    </section>
+
+    <section v-if="notes.length > 0" class="note-grid">
       <template v-for="(item, i) in notes">
         <NoteCard :key="i" :note="item" />
       </template>
     </section>
 
-    <NoteForm />
+    <NoteForm @updatedNotes="settingNotes" />
     <!-- <section class="container">
       <div
         class="card card-raised border border-uv my-4"
@@ -95,6 +98,15 @@ export default {
   computed: {
     ...mapGetters(["isDarkTheme", "isFormOpen"]),
   },
+  watch: {},
+  mounted() {
+    this.notes = JSON.parse(localStorage.getItem("notes") || []);
+  },
+  updated() {
+    // this.notes = JSON.parse(localStorage.getItem("notes") || []);
+    // console.log(this.notes);
+  },
+
   methods: {
     ...mapMutations({
       darkTheme: "darkTheme",
@@ -118,6 +130,10 @@ export default {
       };
       this.notes = JSON.parse(localStorage.getItem("notes") || []);
     },
+    settingNotes(value) {
+      // console.log(value);
+      this.notes = value;
+    },
   },
 };
 </script>
@@ -125,7 +141,7 @@ export default {
 <style lang="scss">
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 400px));
+  grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
   grid-gap: 0 16px;
 }
 </style>

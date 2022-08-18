@@ -8,13 +8,26 @@
   >
     <section class="container">
       <div
-        class="card card-raised border border-uv my-4"
+        class="card card-raised border border-uv my-3"
         :class="[isDarkTheme ? 'bg-dark' : '']"
       >
-        <div class="card-header text-light bg-uv">
+        <div
+          class="card-header text-light bg-uv d-flex align-items-center justify-content-between"
+        >
           <h3 class="my-0">
             <font-awesome-icon :icon="['fa', 'plus']" class="me-1" /> Add Note
           </h3>
+          <button
+            v-tooltip="{
+              placement: 'left',
+              content: 'Close',
+            }"
+            class="btn btn-link text-light py-1 px-1"
+            @click.prevent="formSwitch"
+          >
+            <font-awesome-icon :icon="['fa', 'xmark']" size="2x" />
+          </button>
+          <!-- <font-awesome-icon :icon="['fa', 'xmark']" class="me-1" /> -->
         </div>
         <div class="card-body">
           <div>
@@ -44,7 +57,7 @@
               v-model="info.description"
               class="form-control form-underline-uv"
               :class="[isDarkTheme ? '' : 'form-control-light-theme']"
-              rows="8"
+              rows="6"
             ></textarea>
           </div>
           <div class="d-grid">
@@ -73,6 +86,7 @@ export default {
 
   data() {
     return {
+      notes: [],
       info: {
         id: uuidv4(),
         title: "",
@@ -107,23 +121,26 @@ export default {
       setTimeout(() => {
         this.isBlock = this.isFormOpen;
       }, 300);
-      console.log(this.isFormOpen);
       return this.isFormOpen;
     },
     saveNote() {
+      this.notes = JSON.parse(localStorage.getItem("notes") || []);
       this.notes.push(this.info);
       // eslint-disable-next-line no-unused-vars
+      // if (process.client) {
+      //   localStorage.setItem("notes", [JSON.stringify(this.notes)]);
+      // }
       localStorage.setItem("notes", [JSON.stringify(this.notes)]);
-      // const stateNote = useStorage("notes", );
-      console.log(JSON.parse(localStorage.getItem("notes")));
-      this.data = {
+      this.info = {
         id: uuidv4(),
         title: "",
         description: "",
         date: new Date(),
       };
       this.notes = JSON.parse(localStorage.getItem("notes") || []);
+      console.log(JSON.parse(localStorage.getItem("notes")));
       this.formSwitch();
+      this.$emit("updatedNotes", this.notes);
     },
     formatDate() {
       const formattedDate = format(new Date(), "dd, MMM yy");

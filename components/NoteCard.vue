@@ -8,7 +8,9 @@
       <p class="font-monospace">
         {{ note.description }}
       </p>
-      <div class="d-flex align-items-center justify-content-between mt-4">
+    </div>
+    <div class="card-footer bg-transparent border-top-0">
+      <div class="d-flex align-items-center justify-content-between">
         <span class="font-monospace">{{ formatDate(note.date) }}</span>
         <div class="">
           <button
