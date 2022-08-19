@@ -6,7 +6,7 @@
       isFormOpen ? 'slide-in-bottom' : 'slide-out-bottom',
     ]"
   >
-    <section class="container">
+    <section class="container h-100 d-flex flex-column justify-content-end">
       <div
         class="card card-raised border border-uv my-3"
         :class="[isDarkTheme ? 'bg-dark' : '']"
@@ -14,7 +14,11 @@
         <div
           class="card-header text-light bg-uv d-flex align-items-center justify-content-between"
         >
-          <h3 class="my-0">
+          <h3 v-if="editNote" class="my-0">
+            <font-awesome-icon :icon="['fa', 'file-pen']" class="me-1" /> Update
+            Note
+          </h3>
+          <h3 v-else class="my-0">
             <font-awesome-icon :icon="['fa', 'plus']" class="me-1" /> Add Note
           </h3>
           <button
@@ -61,7 +65,17 @@
             ></textarea>
           </div>
           <div class="d-grid">
-            <button class="btn btn-uv" @click.prevent="saveNote()">
+            <button
+              v-if="editMode"
+              class="btn btn-uv"
+              @click.prevent="editNote(info.id)"
+            >
+              <font-awesome-icon
+                :icon="['fa', 'file-pen']"
+                class="me-1"
+              />Update note
+            </button>
+            <button v-else class="btn btn-uv" @click.prevent="saveNote()">
               <font-awesome-icon :icon="['fa', 'plus']" class="me-1" />Add note
             </button>
           </div>
@@ -78,9 +92,13 @@ import { format } from "date-fns";
 
 export default {
   props: {
-    note: {
-      type: Object,
+    noteId: {
+      type: String,
       default: null,
+    },
+    editMode: {
+      type: Boolean,
+      default: false,
     },
   },
 
@@ -107,6 +125,28 @@ export default {
       this.isBlock = isFormOpen;
     },
   },
+
+  mounted() {
+    if (this.editMode) {
+      const notes = JSON.parse(localStorage.getItem("notes"));
+      const findNote = notes.find((obj) => {
+        return obj.id === this.noteId;
+      });
+      this.info = {
+        id: findNote.id,
+        title: findNote.title,
+        description: findNote.description,
+        date: findNote.date,
+      };
+      // this.formSwitch();
+      console.log("Edit Mode", this.noteId, findNote);
+    }
+  },
+
+  // beforeUpdate() {
+  //   // debugger;
+
+  // },
 
   updated() {
     this.isBlockForm();
@@ -142,9 +182,42 @@ export default {
       this.formSwitch();
       this.$emit("updatedNotes", this.notes);
     },
+
+    editNote(noteId) {
+      const notes = JSON.parse(localStorage.getItem("notes"));
+      const findIndex = notes.findIndex((obj) => obj.id === noteId);
+      console.log(findIndex);
+      console.log(notes[findIndex]);
+      notes[findIndex] = {
+        id: this.info.id,
+        title: this.info.title,
+        description: this.info.description,
+        date: this.info.date,
+      };
+      localStorage.setItem("notes", [JSON.stringify(notes)]);
+      this.info = {
+        id: uuidv4(),
+        title: "",
+        description: "",
+        date: new Date(),
+      };
+      this.notes = JSON.parse(localStorage.getItem("notes") || []);
+      console.log(JSON.parse(localStorage.getItem("notes")));
+      this.formSwitch();
+      this.$emit("updatedNotes", this.notes);
+    },
     formatDate() {
       const formattedDate = format(new Date(), "dd, MMM yy");
       return formattedDate;
+    },
+
+    clearData() {
+      this.info = {
+        id: uuidv4(),
+        title: "",
+        description: "",
+        date: new Date(),
+      };
     },
   },
 };
@@ -152,9 +225,12 @@ export default {
 <style lang="scss">
 .form-content {
   position: fixed;
+  left: 0;
   bottom: 0;
   transform: translateY(100%);
   width: 100%;
+  height: 100vh;
+  background: rgba(12, 12, 12, 0.5);
 }
 @-webkit-keyframes slide-in-bottom {
   0% {

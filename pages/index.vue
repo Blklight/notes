@@ -23,11 +23,15 @@
 
     <section v-if="notes.length > 0" class="note-grid">
       <template v-for="(item, i) in notes">
-        <NoteCard :key="i" :note="item" />
+        <NoteCard :key="i" :note="item" @editNote="setEditNote" />
       </template>
     </section>
 
-    <NoteForm @updatedNotes="settingNotes" />
+    <NoteForm
+      :editMode="isEditNote"
+      :noteId="noteForEdit"
+      @updatedNotes="settingNotes"
+    />
     <!-- <section class="container">
       <div
         class="card card-raised border border-uv my-4"
@@ -93,6 +97,8 @@ export default {
         description: "",
         date: new Date(),
       },
+      isEditNote: false,
+      noteForEdit: "",
     };
   },
   computed: {
@@ -134,6 +140,13 @@ export default {
       // console.log(value);
       this.notes = value;
     },
+    setEditNote(value) {
+      this.isEditNote = true;
+      this.noteForEdit = value.id;
+      this.formSwitch();
+
+      // console.log(this.noteForEdit, this.isEditNote);
+    },
   },
 };
 </script>
@@ -141,7 +154,7 @@ export default {
 <style lang="scss">
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-gap: 0 16px;
 }
 </style>

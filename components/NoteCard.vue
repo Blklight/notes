@@ -1,6 +1,6 @@
 <template>
   <article
-    class="card border border-uv hover-card-bordered-uv"
+    class="card notched-border border border-uv hover-card-bordered-uv"
     :class="[isDarkTheme ? 'bg-dark' : '']"
   >
     <div class="card-body">
@@ -18,7 +18,7 @@
               placement: 'bottom',
               content: 'Edit note',
             }"
-            class="btn btn-link text-uv btn-sm px-2 me-2"
+            class="badge bg-uv text-light border-0"
             @click.prevent="editNote(note.id)"
           >
             <font-awesome-icon :icon="['fa', 'file-pen']" />
@@ -28,7 +28,8 @@
               placement: 'bottom',
               content: 'Delete note',
             }"
-            class="btn btn-link text-uv btn-sm px-2"
+            class="badge bg-uv text-light border-0"
+            @click.prevent="deleteNote(note.id)"
           >
             <font-awesome-icon :icon="['fa', 'trash-can']" />
           </button>
@@ -58,8 +59,21 @@ export default {
       const value = notes.find((obj) => {
         return obj.id === noteId;
       });
-      console.log(value);
+      this.$emit("editNote", value);
     },
+
+    deleteNote(noteId) {
+      const notes = JSON.parse(localStorage.getItem("notes"));
+
+      const test = notes
+        .filter((obj) => obj.id !== noteId)
+        .map((obj) => ({
+          ...obj,
+        }));
+
+      console.log(test);
+    },
+
     formatDate(date) {
       const formattedDate = format(new Date(date), "dd, MMM yy");
 
@@ -68,3 +82,23 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+.notched-border {
+  position: relative;
+  border-radius: 0.25rem;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    width: 50px;
+    height: 50px;
+    transform: rotate(45deg);
+    background-color: #480bff;
+
+    box-shadow: 0 0 0 250px transparent;
+  }
+}
+</style>
