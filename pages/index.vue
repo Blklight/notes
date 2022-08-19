@@ -145,7 +145,7 @@ export default {
   },
 
   mounted() {
-    this.notes = JSON.parse(localStorage.getItem("notes") || []);
+    this.notes = JSON.parse(localStorage.getItem("notes")) || [];
   },
 
   updated() {
@@ -171,7 +171,7 @@ export default {
     },
 
     saveNote() {
-      this.notes = JSON.parse(localStorage.getItem("notes") || []);
+      this.notes = JSON.parse(localStorage.getItem("notes")) || [];
       this.notes.push(this.info);
 
       if (process.client) {
@@ -184,7 +184,7 @@ export default {
         description: "",
         date: new Date(),
       };
-      this.notes = JSON.parse(localStorage.getItem("notes") || []);
+      this.notes = JSON.parse(localStorage.getItem("notes")) || [];
       this.formSwitch();
     },
 
