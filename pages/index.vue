@@ -27,12 +27,6 @@
       </template>
     </section>
 
-    <!-- <NoteForm
-      :editMode="isEditNote"
-      :noteId="noteForEdit"
-      @updatedNotes="settingNotes"
-    /> -->
-
     <div
       class="form-content"
       :class="[
@@ -156,10 +150,6 @@ export default {
 
   updated() {
     this.isBlockForm();
-
-    // if (this.isEditNote) {
-    //   console.log();
-    // }
   },
 
   methods: {
