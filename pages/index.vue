@@ -10,9 +10,7 @@
       </button>
     </div>
     <section v-if="notes.length === 0" class="py-5">
-      <h1
-        class="text-center py-4 d-flex align-items-center justify-content-center"
-      >
+      <h1 class="text-center py-4">
         Click on
         <button class="btn btn-raised btn-uv mx-2" @click.prevent="formSwitch">
           <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
