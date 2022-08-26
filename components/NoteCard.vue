@@ -64,14 +64,15 @@ export default {
 
     deleteNote(noteId) {
       const notes = JSON.parse(localStorage.getItem("notes"));
-
-      const test = notes
+      const newNotes = notes
         .filter((obj) => obj.id !== noteId)
         .map((obj) => ({
           ...obj,
         }));
-
-      console.log(test);
+      if (process.client) {
+        localStorage.setItem("notes", JSON.stringify(newNotes));
+      }
+      this.$emit("deleteNote", true);
     },
 
     formatDate(date) {

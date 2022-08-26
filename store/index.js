@@ -1,5 +1,5 @@
 export const state = () => ({
-  isDark: loadState("darkTheme") || false,
+  isDark: loadState("darkTheme") || true,
   isFormOpen: loadState("formSwitch") || undefined,
 });
 

@@ -1,29 +1,42 @@
 <template>
   <div class="container-fluid py-3">
     <h1>Blklight Notes</h1>
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-raised btn-uv" @click.prevent="formSwitch">
+    <div class="d-flex justify-content-start mb-2">
+      <button class="btn btn-raised btn-uv me-1" @click.prevent="formSwitch">
         <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
       </button>
       <button class="btn btn-raised btn-uv" @click.prevent="darkTheme">
         <font-awesome-icon :icon="['fa', 'adjust']" />
       </button>
     </div>
-    <section v-if="notes.length === 0" class="py-5">
-      <h1 class="text-center py-4">
-        Click on
-        <button class="btn btn-raised btn-uv mx-2" @click.prevent="formSwitch">
-          <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
-        </button>
-        to write your first note
-      </h1>
-    </section>
 
-    <section v-if="notes.length > 0" class="note-grid">
-      <template v-for="(item, i) in notes">
-        <NoteCard :key="i" :note="item" @editNote="setEditNote" />
-      </template>
-    </section>
+    <template v-if="updateList">
+      <h1 class="text-center">Loading notes...</h1>
+    </template>
+    <template v-else>
+      <section v-if="notes.length === 0" class="py-5">
+        <h1 class="text-center py-4">
+          Click on
+          <button
+            class="btn btn-raised btn-uv mx-2"
+            @click.prevent="formSwitch"
+          >
+            <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
+          </button>
+          to write your first note
+        </h1>
+      </section>
+      <section v-if="notes.length > 0" class="note-grid">
+        <template v-for="(item, i) in notes">
+          <NoteCard
+            :key="i"
+            :note="item"
+            @editNote="setEditNote"
+            @deleteNote="setUpdateNotes"
+          />
+        </template>
+      </section>
+    </template>
 
     <div
       class="form-content"
@@ -67,7 +80,7 @@
             </div>
             <div class="mb-3">
               <label for="title" class="form-label">
-                <strong>Title</strong>
+                <strong>Title:</strong>
               </label>
               <input
                 id="title"
@@ -75,12 +88,13 @@
                 type="email"
                 class="form-control form-control-lg form-underline-uv"
                 :class="[isDarkTheme ? '' : 'form-control-light-theme']"
-                placeholder="name@example.com"
+                placeholder="Write here your note title..."
               />
+              <span class="form-text">Required.</span>
             </div>
             <div class="mb-3">
               <label for="description" class="form-label">
-                <strong>Description</strong>
+                <strong>Description:</strong>
               </label>
               <textarea
                 id="description"
@@ -88,12 +102,14 @@
                 class="form-control form-underline-uv"
                 :class="[isDarkTheme ? '' : 'form-control-light-theme']"
                 rows="6"
+                placeholder="Write here your note description..."
               ></textarea>
             </div>
             <div class="d-grid">
               <button
                 v-if="isEditNote"
                 class="btn btn-uv"
+                :disabled="isDisabled"
                 @click.prevent="editNote(note.id)"
               >
                 <font-awesome-icon
@@ -101,7 +117,12 @@
                   class="me-1"
                 />Update note
               </button>
-              <button v-else class="btn btn-uv" @click.prevent="saveNote()">
+              <button
+                v-else
+                class="btn btn-uv"
+                :disabled="isDisabled"
+                @click.prevent="saveNote()"
+              >
                 <font-awesome-icon :icon="['fa', 'plus']" class="me-1" />Add
                 note
               </button>
@@ -129,11 +150,16 @@ export default {
       isEditNote: false,
       noteForEdit: "",
       isBlock: false,
+      updateList: false,
     };
   },
 
   computed: {
     ...mapGetters(["isDarkTheme", "isFormOpen"]),
+    isDisabled() {
+      const disable = !this.note.title;
+      return disable;
+    },
   },
 
   watch: {
@@ -147,6 +173,7 @@ export default {
   },
 
   updated() {
+    this.updateNotes(this.updateList);
     this.isBlockForm();
   },
 
@@ -170,10 +197,10 @@ export default {
 
     saveNote() {
       this.notes = JSON.parse(localStorage.getItem("notes")) || [];
-      this.notes.push(this.info);
+      this.notes.push(this.note);
 
       if (process.client) {
-        localStorage.setItem("notes", [JSON.stringify(this.notes)]);
+        localStorage.setItem("notes", JSON.stringify(this.notes));
       }
 
       this.note = {
@@ -182,23 +209,24 @@ export default {
         description: "",
         date: new Date(),
       };
-      this.notes = JSON.parse(localStorage.getItem("notes")) || [];
+      this.updateList = true;
       this.formSwitch();
     },
 
     editNote(noteId) {
       const notes = JSON.parse(localStorage.getItem("notes"));
       const findIndex = notes.findIndex((obj) => obj.id === noteId);
-
+      console.log(this.note);
+      debugger;
       notes[findIndex] = {
         id: this.note.id,
         title: this.note.title,
         description: this.note.description,
         date: this.note.date,
       };
-
+      debugger;
       if (process.client) {
-        localStorage.setItem("notes", [JSON.stringify(this.notes)]);
+        localStorage.setItem("notes", JSON.stringify(notes));
       }
 
       this.note = {
@@ -208,7 +236,7 @@ export default {
         date: new Date(),
       };
 
-      this.notes = JSON.parse(localStorage.getItem("notes"));
+      this.updateList = true;
       this.formSwitch();
     },
 
@@ -218,15 +246,27 @@ export default {
 
     setEditNote(value) {
       this.isEditNote = true;
-
+      console.log(value);
       this.note = {
         id: value.id,
         title: value.title,
         description: value.description,
         date: value.date,
       };
-
       this.formSwitch();
+    },
+
+    setUpdateNotes(value) {
+      if (value) {
+        this.updateList = true;
+      }
+    },
+
+    updateNotes(value) {
+      if (value) {
+        this.notes = JSON.parse(localStorage.getItem("notes"));
+        this.updateList = false;
+      }
     },
   },
 };
@@ -235,7 +275,7 @@ export default {
 <style lang="scss">
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   grid-gap: 0 16px;
 }
 
