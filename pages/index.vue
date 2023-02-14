@@ -2,41 +2,69 @@
   <div class="container-fluid py-3">
     <h1>Blklight Notes</h1>
     <div class="d-flex justify-content-start mb-2">
-      <button class="btn btn-raised btn-uv me-1" @click.prevent="formSwitch">
+      <button
+        class="btn btn-raised rounded btn-uv me-1"
+        @click.prevent="formSwitch"
+      >
         <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
       </button>
-      <button class="btn btn-raised btn-uv" @click.prevent="darkTheme">
+      <button class="btn btn-raised rounded btn-uv" @click.prevent="darkTheme">
         <font-awesome-icon :icon="['fa', 'adjust']" />
       </button>
     </div>
 
-    <template v-if="updateList">
-      <h1 class="text-center">Loading notes...</h1>
-    </template>
-    <template v-else>
-      <section v-if="notes.length === 0" class="py-5">
-        <h1 class="text-center py-4">
-          Click on
-          <button
-            class="btn btn-raised btn-uv mx-2"
-            @click.prevent="formSwitch"
-          >
-            <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
-          </button>
-          to write your first note
-        </h1>
-      </section>
-      <section v-if="notes.length > 0" class="note-grid">
-        <template v-for="(item, i) in notes">
-          <NoteCard
-            :key="i"
-            :note="item"
-            @editNote="setEditNote"
-            @deleteNote="setUpdateNotes"
-          />
-        </template>
-      </section>
-    </template>
+    <section v-if="notes.length === 0" class="py-5">
+      <h1 class="text-center py-4">
+        Click on
+        <button class="btn btn-raised btn-uv mx-2" @click.prevent="formSwitch">
+          <font-awesome-icon :icon="['fa', 'plus']" class="me-2" />Add Note
+        </button>
+        to write your first note
+      </h1>
+    </section>
+    <section v-if="notes.length > 0" class="note-grid">
+      <template v-for="item in notes">
+        <article
+          :key="item.id"
+          class="card card-raised notched-border border border-uv hover-card-bordered-uv"
+          :class="[isDarkTheme ? 'bg-dark' : '']"
+        >
+          <div class="card-body">
+            <h4>{{ item.title }}</h4>
+            <p class="font-monospace">
+              {{ item.description }}
+            </p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0">
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="font-monospace">{{ formatDate(item.date) }}</span>
+              <div class="">
+                <button
+                  v-tooltip="{
+                    placement: 'bottom',
+                    content: 'Edit note',
+                  }"
+                  class="badge bg-uv text-light border-0"
+                  @click.prevent="setEditNote(item)"
+                >
+                  <font-awesome-icon :icon="['fa', 'file-pen']" />
+                </button>
+                <button
+                  v-tooltip="{
+                    placement: 'bottom',
+                    content: 'Delete note',
+                  }"
+                  class="badge bg-uv text-light border-0"
+                  @click.prevent="deleteNote(item)"
+                >
+                  <font-awesome-icon :icon="['fa', 'trash-can']" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </template>
+    </section>
 
     <div
       class="form-content"
@@ -166,6 +194,15 @@ export default {
     displayForm(isFormOpen) {
       this.isBlock = isFormOpen;
     },
+
+    notes: {
+      handler() {
+        if (process.client) {
+          localStorage.setItem("notes", JSON.stringify(this.notes));
+        }
+      },
+      deep: true,
+    },
   },
 
   mounted() {
@@ -173,7 +210,7 @@ export default {
   },
 
   updated() {
-    this.updateNotes(this.updateList);
+    // this.updateNotes(this.updateList);
     this.isBlockForm();
   },
 
@@ -196,12 +233,7 @@ export default {
     },
 
     saveNote() {
-      this.notes = JSON.parse(localStorage.getItem("notes")) || [];
       this.notes.push(this.note);
-
-      if (process.client) {
-        localStorage.setItem("notes", JSON.stringify(this.notes));
-      }
 
       this.note = {
         id: uuidv4(),
@@ -214,20 +246,14 @@ export default {
     },
 
     editNote(noteId) {
-      const notes = JSON.parse(localStorage.getItem("notes"));
-      const findIndex = notes.findIndex((obj) => obj.id === noteId);
-      console.log(this.note);
-      debugger;
-      notes[findIndex] = {
+      const findIndex = this.notes.findIndex((obj) => obj.id === noteId);
+
+      this.notes[findIndex] = {
         id: this.note.id,
         title: this.note.title,
         description: this.note.description,
         date: this.note.date,
       };
-      debugger;
-      if (process.client) {
-        localStorage.setItem("notes", JSON.stringify(notes));
-      }
 
       this.note = {
         id: uuidv4(),
@@ -258,15 +284,12 @@ export default {
 
     setUpdateNotes(value) {
       if (value) {
-        this.updateList = true;
+        this.notes = JSON.parse(localStorage.getItem("notes")) || [];
       }
     },
 
-    updateNotes(value) {
-      if (value) {
-        this.notes = JSON.parse(localStorage.getItem("notes"));
-        this.updateList = false;
-      }
+    deleteNote(note) {
+      this.notes = this.notes.filter((obj) => obj !== note);
     },
   },
 };
@@ -287,6 +310,25 @@ export default {
   width: 100%;
   height: 100vh;
   background: rgba(12, 12, 12, 0.5);
+}
+
+.notched-border {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    width: 50px;
+    height: 50px;
+    transform: rotate(45deg);
+    background-color: #480bff;
+
+    box-shadow: 0 0 0 250px transparent;
+  }
 }
 
 @-webkit-keyframes slide-in-bottom {
